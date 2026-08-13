@@ -15,6 +15,8 @@
 7. проверяет готовый файл;
 8. сохраняет результат рядом с видео с тем же именем.
 
+Если в указанной папке нет видеофайлов в корне, навык автоматически проверяет все вложенные папки и обрабатывает найденные там видеофайлы. Перечислять подпапки вручную не нужно.
+
 ### Быстрый запуск
 
 Достаточно написать в Codex:
@@ -58,6 +60,7 @@
 
 - Если найдено несколько разных релизов, навык запрашивает уточнение.
 - Субтитры от другого релиза не подставляются молча.
+- Если в корне указанной папки нет видеофайлов, проверяется всё дерево вложенных папок.
 - При обработке папки каждая серия сохраняется сразу после перевода и проверки.
 - Видео не переименовывается, не перемещается и не перекодируется.
 - Если пользователь передаёт готовый SRT или ссылку, он используется как исходник после проверки соответствия видео.
@@ -97,6 +100,8 @@ It accepts a single video file or a movie/series folder and performs the complet
 6. preserves cue numbers, timecodes, line count, and SRT formatting;
 7. validates the completed file;
 8. saves the result next to the video using the same basename.
+
+If the specified folder has no video files directly in its root, the skill automatically scans all nested folders and processes the video files it finds. You do not need to list subfolders manually.
 
 ### Quick start
 
@@ -141,6 +146,7 @@ The complete release name is preserved. No `.ru`, `.rus`, `.translated`, or simi
 
 - If multiple candidates belong to different releases, the skill asks for clarification.
 - A subtitle from another release is never silently substituted.
+- If the folder root has no video files, the entire nested directory tree is scanned.
 - When processing a folder, each episode is saved immediately after translation and validation.
 - Video files are never renamed, moved, or re-encoded.
 - A supplied SRT file or URL is used as the source after checking that it matches the video.

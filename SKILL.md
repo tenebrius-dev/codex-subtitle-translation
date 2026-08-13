@@ -21,7 +21,7 @@ Treat a short request with a local path as a complete instruction. For example:
 
 This request automatically means:
 
-1. find the video files in the given file or folder;
+1. find the video files in the given file or folder; if a folder has no video files directly in its root, scan all nested folders recursively;
 2. find and verify English subtitles on OpenSubtitles for each exact release;
 3. research the film or series context before translating;
 4. translate into Russian with the source line distribution and SRT structure unchanged;
@@ -36,7 +36,8 @@ The default target language is Russian. The default source language is English w
 ### 1. Identify the input
 
 - If the user gives a video file, process that file.
-- If the user gives a folder, enumerate video files recursively only when requested; otherwise use the files directly inside that folder. Sort episodes naturally by season and episode.
+- If the user gives a folder, first inspect the folder's root. If the root contains one or more recognized video files, process those files. If the root contains no recognized video files, recursively inspect the entire descendant tree and process every recognized video file found. Sort the final list naturally by season and episode, then by path.
+- Do not stop at the first nested folder and do not require the user to list subfolders manually. Ignore hidden/system directories unless the user explicitly names one.
 - Recognize common video extensions: `.mkv`, `.mp4`, `.avi`, `.mov`, `.m4v`, `.webm`, `.ts`, and `.m2ts`.
 - Parse the exact release name from the video filename. Do not reduce the task to only a title and episode number.
 - Check for existing sidecar subtitles, but do not assume that a nearby file matches the release without checking its metadata and structure.
