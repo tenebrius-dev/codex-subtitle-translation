@@ -1,0 +1,6 @@
+interface:
+  display_name: "Subtitle Translation"
+  short_description: "Контекстный перевод субтитров с сохранением SRT"
+default_prompt: "Use $codex-subtitle-translation to translate subtitles for the selected film or series while preserving exact SRT structure and release naming."
+policy:
+  allow_implicit_invocation: true
