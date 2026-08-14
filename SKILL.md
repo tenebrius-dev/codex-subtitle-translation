@@ -60,7 +60,7 @@ For each selected SRT file:
 
 1. Preserve the original bytes as a backup named `<original-basename>.SDH.srt`. For example, `Movie.srt` becomes `Movie.SDH.srt` as the backup, while `Movie.srt` remains the cleaned output.
 2. Remove a complete cue when its text consists only of one or more bracketed blocks such as `[door closes]` or `[music]`.
-3. Remove a complete cue when its normalized text is exactly one musical-note character `♪`.
+3. Remove a complete cue when its normalized text is exactly one musical-note character `♪` or the double-note marker `♪♪`.
 4. In every remaining cue, remove all bracketed text blocks matching `[...]`. If this makes the cue empty, remove the cue as well. Remove empty text lines left behind by the cleanup.
 5. Keep the original timecodes and subtitle formatting where possible, then renumber the remaining cues consecutively from `1`.
 

@@ -54,7 +54,7 @@ def is_bracket_only(text: str) -> bool:
 
 
 def is_single_music_note(text: str) -> bool:
-    return re.sub(r"\s+", "", plain_text(text)) == "♪"
+    return re.sub(r"\s+", "", plain_text(text)) in {"♪", "♪♪"}
 
 
 def clean_cues(cues: list[Cue]) -> tuple[list[tuple[str, list[str]]], dict[str, int]]:
