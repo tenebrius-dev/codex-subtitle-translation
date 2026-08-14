@@ -22,12 +22,12 @@ Treat a short request with a local path as a complete instruction. For example:
 This request automatically means:
 
 1. find the video files in the given file or folder; if a folder has no video files directly in its root, scan all nested folders recursively;
-2. search `https://www.opensubtitles.org/` and find/verify English subtitles for each exact release;
+2. open or search `https://www.opensubtitles.org/` directly in a browser and determine subtitle availability from the page's live result rows, then verify English subtitles for each exact release;
 3. research the film or series context before translating;
 4. translate into Russian with the source line distribution and SRT structure unchanged;
 5. validate and save each finished subtitle beside its video using the exact video basename.
 
-Do not ask the user to repeat these steps or to mention `$codex-subtitle-translation`. The skill is configured for implicit invocation. Ask a question only when a real decision cannot be established safely, such as two subtitle candidates matching different cuts or an existing Russian sidecar that would be overwritten.
+Do not ask the user to repeat these steps or to mention `$codex-subtitle-translation`. The skill is configured for implicit invocation. If any Russian OpenSubtitles candidate exists, a user decision is mandatory before selecting it or starting a new translation: show the candidate information and wait for an explicit `продолжить` or `остановиться`.
 
 The default target language is Russian. The default source language is English when an English release subtitle is available. A request that supplies a subtitle file or URL overrides the search step, but the source must still be checked against the video release.
 
@@ -42,32 +42,36 @@ The default target language is Russian. The default source language is English w
 - Parse the exact release name from the video filename. Do not reduce the task to only a title and episode number.
 - Check for existing sidecar subtitles, but do not assume that a nearby file matches the release without checking its metadata and structure.
 
-### 2. Find the source subtitle
+### 2. Find the source subtitle deterministically on OpenSubtitles
 
-Use the OpenSubtitles website at https://www.opensubtitles.org/ for subtitle search. By default, look for an English subtitle that matches the exact release named by the user. Search using the full filename first, then title, season/episode, resolution, source, codec, and release group as needed.
+Use the live OpenSubtitles page at https://www.opensubtitles.org/; search-engine results, cached pages, season pages with stale counts, and web-fetch errors are not evidence that subtitles do or do not exist.
 
-At the same time, check whether OpenSubtitles has a Russian subtitle for the same title and release. A Russian subtitle is an alternative to the new translation, not a silent replacement for it.
+If the user supplies an OpenSubtitles URL, open that exact URL in the browser first. Follow an ordinary redirect to `opensubtitles.com` when the legacy domain redirects, and record the final page URL. Do not replace a supplied URL with a search-engine query. If no URL is supplied, search the complete video filename first, then title, season/episode, resolution, source, codec, and release group.
 
-For every candidate, verify as many of these signals as are available:
+Treat subtitle availability as established only after inspecting the live DOM of the result page:
 
-- title, season, and episode;
-- WEB-DL or WEBRip source and resolution;
-- release group and codec;
-- runtime or cue timing near the end of the file;
-- language and whether it is a full dialogue subtitle rather than SDH-only or forced-only.
+- verify the page heading contains the title, season, and episode;
+- read the visible result count and enumerate every subtitle row;
+- collect each row's subtitle ID/detail URL, language code (`eng`, `rus`, etc.), displayed release text, release flags, uploader, and file format;
+- use the language-code links and row metadata, not only visually truncated language labels;
+- open the detail page for every plausible English or Russian candidate before selecting it.
 
-If the user gives a particular subtitle file or URL, use it as the source and verify it instead of searching for a replacement. If no candidate is clearly for the requested release, stop before translating and ask the user which candidate to use. Never silently substitute a subtitle from another release.
+On each detail page, record the full subtitle filename, language, subtitle type (full dialogue, SDH, forced, commentary), runtime or final cue time, FPS, uploader, translator field, and release metadata. For the translator field, inspect the live DOM for `a.none[title="Translator"]` (including whitespace/newlines inside the element), read its visible `textContent`, and trim only surrounding whitespace. For example, `<a class="none" title="Translator">\n    (AppleTV)\n</a>` must be recorded exactly as `(AppleTV)`. Do not infer the translator from the uploader, comments, or filename; report `translator не указан` only when the Translator element is absent or visibly empty. Download only from the verified detail page and compare the downloaded subtitle's structure and final cue timestamp with the candidate metadata.
 
-When a website requires an interactive session or presents several downloads, use the available browser and report the selected source URL in the completion summary. Do not claim an exact match based only on a similar title.
+Compare the English candidate against the exact video filename using title, season/episode, source, resolution, codec, release group, runtime, FPS, cut, and cue timing. Treat a release group as evidence, not proof. A candidate with only the same title and episode is not an exact match.
 
-If a Russian candidate is found, offer it to the user before translating. Show:
+Report one of these explicit availability states:
 
-- the OpenSubtitles URL;
-- the language and subtitle type;
-- the evidence that it matches the requested release;
-- the value of the `translator` field exactly as displayed on OpenSubtitles. If the field is empty or missing, say `translator не указан`.
+- `найдено, релиз совпадает` — a verified detail page and subtitle file match the requested release;
+- `найдено, релиз не совпадает` — subtitles exist, but no candidate matches the requested release; include the exact filename(s);
+- `не найдено` — the live OpenSubtitles result page and all relevant language/release filters were inspected and contain no candidate;
+- `невозможно проверить` — the page is blocked by login, CAPTCHA, network failure, or another access problem; never convert this state into `не найдено`.
 
-If several Russian candidates are found, list each one separately. Ask whether to use one of the existing Russian subtitles or proceed with a new translation. Use an existing Russian file only after the user chooses it and after checking that it belongs to the requested release. Never silently use an existing Russian subtitle.
+If no English candidate is clearly suitable, stop before translating and ask which verified candidate to use. Never silently substitute a subtitle from another release.
+
+Check Russian candidates alongside the English search. First select and verify the English release source. If one or more Russian candidates exist, pause before downloading, selecting, or translating anything. Show every candidate separately with its OpenSubtitles detail URL, exact subtitle filename, language, subtitle type, release name, runtime/final cue time when available, uploader, and the `translator` field exactly as displayed (`translator не указан` only when the Translator element is absent or empty). Then ask whether to `продолжить` or `остановиться`, and wait for the explicit decision. Do not treat silence, an ambiguous reply, or an unrelated message as permission to continue.
+
+After the user explicitly says `продолжить`, compare each Russian candidate only with the selected English candidate, not directly with the video release. Run `scripts/compare_srt_compatibility.py ENGLISH.srt RUSSIAN.srt`; require equal cue count, identical cue-number sequence, and identical timecodes for deterministic samples from the first three cues, the middle three cues, and the last three cues. The number of text lines inside a cue is not part of this release-compatibility decision. If a candidate's release metadata and compatibility test match the English candidate, use that Russian file automatically even when both differ from the video filename. If they do not match, do not use it; report its existence, exact filename, URL, and failed comparison, then use the English file for a new translation. If the user says `остановиться`, stop without selecting a Russian file, translating, or creating the final output.
 
 ### 3. Research context before translating
 
@@ -130,8 +134,9 @@ For each video, report briefly:
 ## Decision rules
 
 - Exact release match is more important than a convenient download. Ask when the evidence conflicts.
-- The English subtitle is the default translation source. A found Russian subtitle may be used only if the user explicitly chooses it after seeing its OpenSubtitles URL and `translator` value.
-- If OpenSubtitles is unavailable, report that and ask the user to provide a source subtitle; do not silently use a random subtitle from another release.
+- The English subtitle is the default reference source. When a Russian candidate exists, report it and wait for explicit `продолжить` or `остановиться` before any selection or translation. After `продолжить`, compare a Russian candidate with the selected English release, not directly with the video release. Use it only when its release metadata and `scripts/compare_srt_compatibility.py` checks match the English file; otherwise report its existence, exact filename/URL, and failed comparison, then translate from English.
+- If OpenSubtitles is unavailable or access is blocked, report `невозможно проверить` and ask the user to provide a source subtitle; do not report `не найдено` and do not silently use a random subtitle from another release.
+- Do not extract, inspect, or use embedded subtitle tracks from the video. The source must come from OpenSubtitles or from a subtitle file/URL explicitly supplied by the user.
 - If the source is not SRT, convert it to a working SRT only while preserving cue order, timings, line distribution, and markup, then validate the translated SRT against that normalized source.
 - Never edit, rename, move, or re-encode the video as part of this workflow.
 - A translation is not complete until the file exists beside the video and the structural check passes.
@@ -139,4 +144,5 @@ For each video, report briefly:
 ## Resources
 
 - Use `scripts/validate_srt.py` for deterministic structural checks.
+- Use `scripts/compare_srt_compatibility.py` before accepting a Russian candidate as the equivalent of the selected English release.
 - Use `references/context-and-release.md` for the compact research and release-matching checklist.

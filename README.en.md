@@ -19,7 +19,9 @@ The skill works with a single video file or a movie/series folder and:
 
 If the specified folder has no video files directly in its root, the skill automatically scans all nested folders and processes the video files it finds. You do not need to list subfolders manually.
 
-At the same time, the skill checks [opensubtitles.org](https://www.opensubtitles.org/) for existing Russian subtitles matching the same release. If any are found, it offers each one before translating and shows its URL and the `translator` field value. If the field is empty, it reports `translator not specified`. Existing Russian subtitles are never selected automatically.
+The check is performed on the live [opensubtitles.org](https://www.opensubtitles.org/) page in a browser. Search-engine results, cached pages, and fetch errors are not evidence that subtitles do or do not exist.
+
+At the same time, the skill checks for existing Russian subtitles matching the same release. If any are found, it shows each candidate before translating: subtitle detail URL, exact filename, language, type, release, timing, uploader, and the `translator` field value. If the field is empty, it reports `translator not specified`. The skill then waits for an explicit `продолжить` or `остановиться`; existing Russian subtitles are never selected automatically.
 
 ## Quick start
 
@@ -69,6 +71,7 @@ The complete release name is preserved. No `.ru`, `.rus`, `.translated`, or simi
 - When processing a folder, each episode is saved immediately after translation and validation.
 - Video files are never renamed, moved, or re-encoded.
 - A supplied SRT file or URL is used as the source after checking that it matches the video.
+- Use `scripts/compare_srt_compatibility.py` to compare an English source with a Russian candidate.
 
 ## Manual SRT validation
 

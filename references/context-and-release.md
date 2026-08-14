@@ -4,17 +4,19 @@ Use this checklist before translating a film or episode.
 
 ## Release matching
 
-1. Search the OpenSubtitles website: https://www.opensubtitles.org/.
-2. Start with the complete video filename.
-3. Confirm title, season, episode, and release group.
-4. Compare source, resolution, codec, and WEB-DL or WEBRip markers.
-5. Compare runtime or the final cue timestamp when available.
-6. Reject candidates that are forced-only, SDH-only, commentary, or from a different cut unless the user explicitly asks for them.
-7. Search for both the default English source and a possible Russian alternative for the same release.
-8. If a Russian alternative exists, show its URL and the exact `translator` field value; if absent, report that the translator is not specified.
-9. If two plausible candidates disagree in cue timing or dialogue, ask the user before translation.
+1. If the user supplies an OpenSubtitles URL, open that exact URL in a browser first; follow an ordinary redirect to `opensubtitles.com` and record the final URL.
+2. Do not use search-engine results, cached pages, stale season counts, or web-fetch errors as proof of presence or absence.
+3. Verify the live page heading, title, season, episode, visible result count, and every result row.
+4. Extract subtitle ID/detail URL and language from the row's links, including `sublanguageid-eng` and `sublanguageid-rus`.
+5. Open every plausible candidate's detail page and record the full filename, language, subtitle type, runtime/final cue timestamp, FPS, uploader, translator, and release metadata. Read the translator from the live DOM selector `a.none[title="Translator"]`; trim surrounding whitespace/newlines but preserve the displayed value, e.g. `(AppleTV)`. Do not infer it from uploader, comments, or filename. Use `translator не указан` only when that element is absent or empty.
+6. Compare the requested video release and the selected English candidate by title, episode, source, resolution, codec, release group, runtime, FPS, cut, and cue timing.
+7. Use these availability states: `найдено, релиз совпадает`; `найдено, релиз не совпадает` with exact filename(s); `не найдено` only after direct live-page/filter inspection; or `невозможно проверить` when access is blocked.
+8. Search English and Russian candidates together. If any Russian candidate exists, stop before selecting, downloading, or translating; show every candidate's detail URL, exact filename, language, type, release name, runtime/final cue time, uploader, and exact `translator` field read from `a.none[title="Translator"]`, then wait for explicit `продолжить` or `остановиться`.
+9. After `продолжить`, compare each Russian candidate only with the selected English release, not directly with the video release. Run `scripts/compare_srt_compatibility.py` and require equal cue count, identical cue-number sequence, and matching timings for the first three, middle three, and last three cues. Do not require equal text-line count for this release-compatibility decision. If all checks pass, use the Russian subtitle automatically even when both differ from the video; otherwise report its exact filename, URL, and failed comparison and translate from English.
+10. If the user says `остановиться`, stop without selecting a Russian file, translating, or creating the final output. If the translator field is absent, say `translator не указан`.
+11. Do not extract or use embedded subtitle tracks from the video.
 
-The release group is useful evidence, not proof by itself. A subtitle that merely contains the same episode number is not an exact match.
+The release group is useful evidence, not proof by itself. A subtitle that merely contains the same episode number is not an exact match. If the page cannot be inspected, report `невозможно проверить`, not `не найдено`.
 
 ## Context research
 
