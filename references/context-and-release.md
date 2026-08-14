@@ -41,6 +41,10 @@ Collect only context that can change a translation decision:
 
 Prefer official or primary material for facts. Use recaps and fan discussions to disambiguate dialogue, not as unquestioned authority. Note uncertainty rather than inventing a definitive interpretation.
 
+## SDH cleanup
+
+For `убрать звуки` or `убрать SDH`, preserve the input SRT first as `<basename>.SDH.srt`, then clean the original path. Remove complete cues containing only bracketed descriptions, complete cues whose normalized text is exactly `♪`, and bracketed blocks from all remaining cues. Remove cues that become empty and renumber the survivors from `1`; keep timecodes unchanged. Skip existing `.SDH.srt` backups during folder processing.
+
 ## Translation QA
 
 Before saving the sidecar:

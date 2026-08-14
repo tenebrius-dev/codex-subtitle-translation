@@ -1,6 +1,6 @@
 ---
 name: codex-subtitle-translation
-description: Use automatically when the user asks in Russian or English to make, translate, or prepare Russian subtitles for a local movie, episode, video file, or folder, or asks to use or extract embedded subtitles from the video into an English SRT sidecar. Find and verify the English source for the exact release when needed, research context, preserve the original SRT cue count, timings, formatting, and line distribution, and save the result beside the video.
+description: Use automatically when the user asks in Russian or English to make, translate, or prepare Russian subtitles for a local movie, episode, video file, or folder, asks to use or extract embedded subtitles from the video into an English SRT sidecar, or asks to remove sounds or SDH from subtitles. Find and verify the English source for the exact release when needed, research context, preserve the original SRT cue count, timings, formatting, and line distribution, and save the result beside the video.
 ---
 
 # Subtitle Translation
@@ -51,6 +51,26 @@ For example, `Example.Release.mkv` becomes `Example.Release.eng.srt`. Keep brack
 5. Validate the extracted file as SRT. If the embedded track is ASS/SSA, extract it to a temporary `.ass` file and convert it to `VIDEO.eng.srt` with a subtitle conversion tool before validation. If it is image-based PGS or VobSub, direct extraction cannot produce text SRT; report the format and ask whether to perform OCR or use another source.
 
 This override applies to a single video and to every video found during folder scanning. The extracted `.eng.srt` is the English source for a later Russian translation; the final Russian sidecar remains `VIDEO.srt`.
+
+## Remove sounds or SDH override
+
+Interpret `убрать звуки`, `убрать SDH`, and equivalent wording as a request to clean existing SRT files. Do not search OpenSubtitles and do not translate in this mode.
+
+For each selected SRT file:
+
+1. Preserve the original bytes as a backup named `<original-basename>.SDH.srt`. For example, `Movie.srt` becomes `Movie.SDH.srt` as the backup, while `Movie.srt` remains the cleaned output.
+2. Remove a complete cue when its text consists only of one or more bracketed blocks such as `[door closes]` or `[music]`.
+3. Remove a complete cue when its normalized text is exactly one musical-note character `♪`.
+4. In every remaining cue, remove all bracketed text blocks matching `[...]`. If this makes the cue empty, remove the cue as well. Remove empty text lines left behind by the cleanup.
+5. Keep the original timecodes and subtitle formatting where possible, then renumber the remaining cues consecutively from `1`.
+
+Use the bundled deterministic script:
+
+```text
+python3 <codex-subtitle-translation-skill>/scripts/remove_sdh.py INPUT.srt
+```
+
+The input can be an SRT file, a video with an adjacent SRT, or a folder. For a folder, scan the same video/SRT tree recursively when needed, skip existing `.SDH.srt` backups, and report every changed file. Abort before changing a file if its SRT structure is malformed or its backup name already contains a different original.
 
 ## Workflow
 
@@ -166,4 +186,5 @@ For each video, report briefly:
 
 - Use `scripts/validate_srt.py` for deterministic structural checks.
 - Use `scripts/compare_srt_compatibility.py` before accepting a Russian candidate as the equivalent of the selected English release.
+- Use `scripts/remove_sdh.py` for the `убрать звуки` and `убрать SDH` cleanup mode.
 - Use `references/context-and-release.md` for the compact research and release-matching checklist.

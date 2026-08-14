@@ -46,6 +46,22 @@ Use $codex-subtitle-translation.
 Make Russian subtitles for /path/to/series-folder
 ```
 
+## Remove sounds and SDH
+
+To clean existing subtitles, write:
+
+```text
+Убрать звуки
+```
+
+or:
+
+```text
+Убрать SDH
+```
+
+The skill first preserves the original file as `name.SDH.srt`, then cleans the original SRT: it removes cues containing only sound descriptions in `[...]`, cues containing a single `♪`, bracketed blocks from remaining cues, and renumbers the remaining cues.
+
 ## Extract subtitles from the video
 
 To use an embedded English subtitle track from the MKV itself, write:
@@ -89,6 +105,7 @@ The complete release name is preserved. No `.ru`, `.rus`, `.translated`, or simi
 - Video files are never renamed, moved, or re-encoded.
 - A supplied SRT file or URL is used as the source after checking that it matches the video.
 - Embedded tracks are extracted with `mkvextract` from MKVToolNix.
+- SDH cleanup uses `scripts/remove_sdh.py`.
 - Use `scripts/compare_srt_compatibility.py` to compare an English source with a Russian candidate.
 
 ## Manual SRT validation
