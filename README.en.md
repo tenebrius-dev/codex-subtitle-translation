@@ -46,6 +46,23 @@ Use $codex-subtitle-translation.
 Make Russian subtitles for /path/to/series-folder
 ```
 
+## Extract subtitles from the video
+
+To use an embedded English subtitle track from the MKV itself, write:
+
+```text
+Используй субтитры из файла видео
+```
+
+In this mode, OpenSubtitles is bypassed. The skill inspects the embedded tracks, selects an English text track, and saves it as:
+
+```text
+/path/Example.Release.mkv
+/path/Example.Release.eng.srt
+```
+
+Only `.eng` is added before `.srt`; the complete release name is preserved. If several English tracks are plausible, the skill asks which one to use. PGS and VobSub are image formats and require OCR to produce a text SRT.
+
 ## Output naming
 
 For:
@@ -71,6 +88,7 @@ The complete release name is preserved. No `.ru`, `.rus`, `.translated`, or simi
 - When processing a folder, each episode is saved immediately after translation and validation.
 - Video files are never renamed, moved, or re-encoded.
 - A supplied SRT file or URL is used as the source after checking that it matches the video.
+- Embedded tracks are extracted with `mkvextract` from MKVToolNix.
 - Use `scripts/compare_srt_compatibility.py` to compare an English source with a Russian candidate.
 
 ## Manual SRT validation

@@ -18,6 +18,17 @@ Use this checklist before translating a film or episode.
 
 The release group is useful evidence, not proof by itself. A subtitle that merely contains the same episode number is not an exact match. If the page cannot be inspected, report `невозможно проверить`, not `не найдено`.
 
+## Embedded subtitle override
+
+When the user says `используй субтитры из файла видео`, bypass OpenSubtitles and inspect the video's embedded tracks with MKVToolNix:
+
+```bash
+mkvmerge -i "VIDEO.mkv"
+mkvextract "VIDEO.mkv" tracks TRACK_ID:"VIDEO.eng.srt"
+```
+
+Use an English full-dialogue text track. If there are several plausible English tracks, ask the user to choose by track ID/title/format. `S_TEXT/UTF8` and `S_TEXT/ASCII` tracks can be extracted directly as SRT; ASS/SSA requires conversion after extraction, while PGS and VobSub are image subtitles and require OCR before a text SRT can exist. Validate the resulting `VIDEO.eng.srt` before using it as the translation source. Keep the full video basename and add only `.eng` before `.srt`.
+
 ## Context research
 
 Collect only context that can change a translation decision:

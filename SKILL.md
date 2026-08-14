@@ -1,6 +1,6 @@
 ---
 name: codex-subtitle-translation
-description: Use automatically when the user asks in Russian or English to make, translate, or prepare Russian subtitles for a local movie, episode, video file, or folder. Find and verify the English source for the exact release, research context, preserve the original SRT cue count, timings, formatting, and line distribution, and save the result beside the video.
+description: Use automatically when the user asks in Russian or English to make, translate, or prepare Russian subtitles for a local movie, episode, video file, or folder, or asks to use or extract embedded subtitles from the video into an English SRT sidecar. Find and verify the English source for the exact release when needed, research context, preserve the original SRT cue count, timings, formatting, and line distribution, and save the result beside the video.
 ---
 
 # Subtitle Translation
@@ -30,6 +30,27 @@ This request automatically means:
 Do not ask the user to repeat these steps or to mention `$codex-subtitle-translation`. The skill is configured for implicit invocation. If any Russian OpenSubtitles candidate exists, a user decision is mandatory before selecting it or starting a new translation: show the candidate information and wait for an explicit `продолжить` or `остановиться`.
 
 The default target language is Russian. The default source language is English when an English release subtitle is available. A request that supplies a subtitle file or URL overrides the search step, but the source must still be checked against the video release.
+
+## Embedded subtitle override
+
+Interpret the exact request `используй субтитры из файла видео` and equivalent wording as an explicit source-mode override. In this mode, do not search OpenSubtitles and do not wait for a Russian OpenSubtitles candidate decision. Extract the embedded English subtitle track from each video itself.
+
+For each video:
+
+1. Inspect embedded tracks with `mkvmerge -i` or `mkvinfo` from MKVToolNix.
+2. Prefer an English full-dialogue text track with language `eng`; do not choose a forced-only, commentary, or SDH track when a normal English track is available.
+3. If more than one plausible English track remains, show the track IDs, languages, titles, and formats and ask the user which one to use.
+4. Extract a SubRip track with MKVToolNix, preserving the complete video basename:
+
+```text
+mkvextract "VIDEO.mkv" tracks TRACK_ID:"VIDEO.eng.srt"
+```
+
+For example, `Example.Release.mkv` becomes `Example.Release.eng.srt`. Keep brackets, release tags, capitalization, and punctuation unchanged; add only `.eng` before `.srt`.
+
+5. Validate the extracted file as SRT. If the embedded track is ASS/SSA, extract it to a temporary `.ass` file and convert it to `VIDEO.eng.srt` with a subtitle conversion tool before validation. If it is image-based PGS or VobSub, direct extraction cannot produce text SRT; report the format and ask whether to perform OCR or use another source.
+
+This override applies to a single video and to every video found during folder scanning. The extracted `.eng.srt` is the English source for a later Russian translation; the final Russian sidecar remains `VIDEO.srt`.
 
 ## Workflow
 
@@ -136,7 +157,7 @@ For each video, report briefly:
 - Exact release match is more important than a convenient download. Ask when the evidence conflicts.
 - The English subtitle is the default reference source. When a Russian candidate exists, report it and wait for explicit `продолжить` or `остановиться` before any selection or translation. After `продолжить`, compare a Russian candidate with the selected English release, not directly with the video release. Use it only when its release metadata and `scripts/compare_srt_compatibility.py` checks match the English file; otherwise report its existence, exact filename/URL, and failed comparison, then translate from English.
 - If OpenSubtitles is unavailable or access is blocked, report `невозможно проверить` and ask the user to provide a source subtitle; do not report `не найдено` and do not silently use a random subtitle from another release.
-- Do not extract, inspect, or use embedded subtitle tracks from the video. The source must come from OpenSubtitles or from a subtitle file/URL explicitly supplied by the user.
+- In the default OpenSubtitles mode, do not extract, inspect, or use embedded subtitle tracks from the video. The explicit request `используй субтитры из файла видео` is the exception and activates the Embedded subtitle override above.
 - If the source is not SRT, convert it to a working SRT only while preserving cue order, timings, line distribution, and markup, then validate the translated SRT against that normalized source.
 - Never edit, rename, move, or re-encode the video as part of this workflow.
 - A translation is not complete until the file exists beside the video and the structural check passes.
