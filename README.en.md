@@ -9,7 +9,7 @@ Codex skill for context-aware translation of subtitles into Russian.
 The skill works with a single video file or a movie/series folder and:
 
 1. finds the video file or episode list;
-2. searches OpenSubtitles for English subtitles matching the exact release;
+2. searches [opensubtitles.org](https://www.opensubtitles.org/) for English subtitles matching the exact release;
 3. verifies the title, season, episode, resolution, source, codec, release group, and timing;
 4. researches the film or series context, characters, and terminology;
 5. translates the subtitles into Russian;
@@ -18,6 +18,8 @@ The skill works with a single video file or a movie/series folder and:
 8. saves the result next to the video using the same basename.
 
 If the specified folder has no video files directly in its root, the skill automatically scans all nested folders and processes the video files it finds. You do not need to list subfolders manually.
+
+At the same time, the skill checks [opensubtitles.org](https://www.opensubtitles.org/) for existing Russian subtitles matching the same release. If any are found, it offers each one before translating and shows its URL and the `translator` field value. If the field is empty, it reports `translator not specified`. Existing Russian subtitles are never selected automatically.
 
 ## Quick start
 
@@ -62,6 +64,7 @@ The complete release name is preserved. No `.ru`, `.rus`, `.translated`, or simi
 
 - If multiple candidates belong to different releases, the skill asks for clarification.
 - A subtitle from another release is never silently substituted.
+- Found Russian subtitles are offered with their URL and `translator` field value.
 - If the folder root has no video files, the entire nested directory tree is scanned.
 - When processing a folder, each episode is saved immediately after translation and validation.
 - Video files are never renamed, moved, or re-encoded.

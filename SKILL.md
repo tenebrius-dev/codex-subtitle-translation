@@ -22,7 +22,7 @@ Treat a short request with a local path as a complete instruction. For example:
 This request automatically means:
 
 1. find the video files in the given file or folder; if a folder has no video files directly in its root, scan all nested folders recursively;
-2. find and verify English subtitles on OpenSubtitles for each exact release;
+2. search `https://www.opensubtitles.org/` and find/verify English subtitles for each exact release;
 3. research the film or series context before translating;
 4. translate into Russian with the source line distribution and SRT structure unchanged;
 5. validate and save each finished subtitle beside its video using the exact video basename.
@@ -44,7 +44,9 @@ The default target language is Russian. The default source language is English w
 
 ### 2. Find the source subtitle
 
-By default, look for an English subtitle on OpenSubtitles that matches the exact release named by the user. Search using the full filename first, then title, season/episode, resolution, source, codec, and release group as needed.
+Use the OpenSubtitles website at https://www.opensubtitles.org/ for subtitle search. By default, look for an English subtitle that matches the exact release named by the user. Search using the full filename first, then title, season/episode, resolution, source, codec, and release group as needed.
+
+At the same time, check whether OpenSubtitles has a Russian subtitle for the same title and release. A Russian subtitle is an alternative to the new translation, not a silent replacement for it.
 
 For every candidate, verify as many of these signals as are available:
 
@@ -57,6 +59,15 @@ For every candidate, verify as many of these signals as are available:
 If the user gives a particular subtitle file or URL, use it as the source and verify it instead of searching for a replacement. If no candidate is clearly for the requested release, stop before translating and ask the user which candidate to use. Never silently substitute a subtitle from another release.
 
 When a website requires an interactive session or presents several downloads, use the available browser and report the selected source URL in the completion summary. Do not claim an exact match based only on a similar title.
+
+If a Russian candidate is found, offer it to the user before translating. Show:
+
+- the OpenSubtitles URL;
+- the language and subtitle type;
+- the evidence that it matches the requested release;
+- the value of the `translator` field exactly as displayed on OpenSubtitles. If the field is empty or missing, say `translator не указан`.
+
+If several Russian candidates are found, list each one separately. Ask whether to use one of the existing Russian subtitles or proceed with a new translation. Use an existing Russian file only after the user chooses it and after checking that it belongs to the requested release. Never silently use an existing Russian subtitle.
 
 ### 3. Research context before translating
 
@@ -110,6 +121,7 @@ Do not overwrite an existing result silently if it may contain a different trans
 For each video, report briefly:
 
 - the chosen English subtitle and why it matches the release;
+- any Russian subtitle candidate found on https://www.opensubtitles.org/, including its URL and `translator` field;
 - the context sources or notes used;
 - the exact Russian output path;
 - validator result;
@@ -118,6 +130,7 @@ For each video, report briefly:
 ## Decision rules
 
 - Exact release match is more important than a convenient download. Ask when the evidence conflicts.
+- The English subtitle is the default translation source. A found Russian subtitle may be used only if the user explicitly chooses it after seeing its OpenSubtitles URL and `translator` value.
 - If OpenSubtitles is unavailable, report that and ask the user to provide a source subtitle; do not silently use a random subtitle from another release.
 - If the source is not SRT, convert it to a working SRT only while preserving cue order, timings, line distribution, and markup, then validate the translated SRT against that normalized source.
 - Never edit, rename, move, or re-encode the video as part of this workflow.

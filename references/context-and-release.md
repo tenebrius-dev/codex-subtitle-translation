@@ -4,12 +4,15 @@ Use this checklist before translating a film or episode.
 
 ## Release matching
 
-1. Start with the complete video filename.
-2. Confirm title, season, episode, and release group.
-3. Compare source, resolution, codec, and WEB-DL or WEBRip markers.
-4. Compare runtime or the final cue timestamp when available.
-5. Reject candidates that are forced-only, SDH-only, commentary, or from a different cut unless the user explicitly asks for them.
-6. If two plausible candidates disagree in cue timing or dialogue, ask the user before translation.
+1. Search the OpenSubtitles website: https://www.opensubtitles.org/.
+2. Start with the complete video filename.
+3. Confirm title, season, episode, and release group.
+4. Compare source, resolution, codec, and WEB-DL or WEBRip markers.
+5. Compare runtime or the final cue timestamp when available.
+6. Reject candidates that are forced-only, SDH-only, commentary, or from a different cut unless the user explicitly asks for them.
+7. Search for both the default English source and a possible Russian alternative for the same release.
+8. If a Russian alternative exists, show its URL and the exact `translator` field value; if absent, report that the translator is not specified.
+9. If two plausible candidates disagree in cue timing or dialogue, ask the user before translation.
 
 The release group is useful evidence, not proof by itself. A subtitle that merely contains the same episode number is not an exact match.
 
