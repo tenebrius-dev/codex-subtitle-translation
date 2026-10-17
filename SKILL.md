@@ -31,6 +31,17 @@ Do not ask the user to repeat these steps or to mention `$codex-subtitle-transla
 
 The default target language is Russian. The default source language is English when an English release subtitle is available. A request that supplies a subtitle file or URL overrides the search step, but the source must still be checked against the video release.
 
+## Non-waivable pre-translation gate
+
+Do not begin translating a cue, create a partial or final Russian SRT, or claim translation progress until every applicable item below is complete for that episode. These are hard gates, not suggested ordering.
+
+1. **Scope the user's exception exactly.** An exception changes only the stage it names. For example, `русских нет`, `не проверяй русские` or `сразу переводи` waives only the Russian-candidate lookup and decision; it does **not** waive English-source qualification, context research, glossary creation, geometry preservation, or final validation. The embedded-subtitle and SDH overrides likewise waive only their named source or cleanup stages.
+2. **Qualify the source.** Confirm the supplied or selected English SRT is structurally valid and is the intended source for the exact video release. A user-supplied adjacent SRT replaces OpenSubtitles discovery, not source qualification.
+3. **Finish context research.** For a series episode, first cover every accessible item that can affect a translation decision: the current episode's official or reliable description, continuity from the immediately preceding episode or season, current character names and relationships, setting, period vocabulary, organizations, ranks, and recurring terms. Do not equate finding one synopsis with completing this gate.
+4. **Write the working context and glossary.** Before translating, save the consulted source links, confirmed facts, unresolved ambiguity, and the episode/title glossary in `.subtitle-work/context/`. For a first translated episode of a title, the glossary must include characters, place names, organizations, ranks, recurring jokes, preferred forms of address, and established transliterations; it becomes the reference for later episodes.
+
+If any gate cannot be completed, stop before writing translation text and explain the specific missing context or source evidence. Do not silently substitute generic machine translation, browser translation, or any third-party translation service for this gate or for the translation itself.
+
 ## Embedded subtitle override
 
 Interpret the exact request `используй субтитры из файла видео` and equivalent wording as an explicit source-mode override. In this mode, do not search OpenSubtitles and do not wait for a Russian OpenSubtitles candidate decision. Extract the embedded English subtitle track from each video itself.
@@ -116,14 +127,14 @@ After the user explicitly says `продолжить`, compare each Russian cand
 
 ### 3. Research context before translating
 
-Research enough context to resolve names, relationships, slang, recurring terminology, and tone. Use a compact mix of reliable and practical sources:
+This section is the context gate above. It must finish before the first translated cue, not in parallel with translation. Research all accessible context that can resolve names, relationships, slang, recurring terminology, period detail, continuity, and tone. Use a compact mix of reliable and practical sources:
 
 - official synopsis or episode description;
 - episode guides or reputable recaps;
 - interviews or production material when a reference is obscure;
 - fan discussions and Reddit when they clarify idiom, continuity, or a disputed interpretation.
 
-For a series, include the immediately preceding episode or season context when it affects the dialogue. Record a short working note in `.subtitle-work/context/` when the information will be useful for later episodes. Keep source links and distinguish confirmed facts from interpretation. Do not pretend to have watched the episode when only written sources were consulted.
+For a series, include the immediately preceding episode or season context when it affects the dialogue. Record a working note in `.subtitle-work/context/` before translating when the information will be useful for later episodes. Keep source links and distinguish confirmed facts from interpretation. Do not pretend to have watched the episode when only written sources were consulted.
 
 Before the first episode of a title, establish a glossary: character names, place names, organizations, invented terms, ranks, recurring jokes, and preferred forms of address. Reuse it across episodes and update it when the new episode establishes a better reading.
 
@@ -141,6 +152,8 @@ Treat the source SRT as a fixed timed document. Translation may change the text 
 - If a Russian phrase is too long, rewrite it naturally within the existing line count; do not alter timings or create an extra line.
 
 Work in manageable chunks, but always compare the completed file with the complete source before delivery.
+
+Translate with Codex's own language reasoning and the established context/glossary. Do not send subtitle text to public web translators, browser translation tools, or other third-party machine-translation services, and do not present unreviewed machine output as a finished translation.
 
 ### 5. Validate and save each completed episode
 
@@ -175,6 +188,7 @@ For each video, report briefly:
 ## Decision rules
 
 - Exact release match is more important than a convenient download. Ask when the evidence conflicts.
+- A user exception is narrow: it may bypass only the expressly named check or mode. Never infer that `сразу`, `не проверяй`, or similar wording authorizes skipping context, glossary, source qualification, translation-quality requirements, or validation.
 - The English subtitle is the default reference source. When a Russian candidate exists, report it and wait for explicit `продолжить` or `остановиться` before any selection or translation. After `продолжить`, compare a Russian candidate with the selected English release, not directly with the video release. Use it only when its release metadata and `scripts/compare_srt_compatibility.py` checks match the English file; otherwise report its existence, exact filename/URL, and failed comparison, then translate from English.
 - If OpenSubtitles is unavailable or access is blocked, report `невозможно проверить` and ask the user to provide a source subtitle; do not report `не найдено` and do not silently use a random subtitle from another release.
 - In the default OpenSubtitles mode, do not extract, inspect, or use embedded subtitle tracks from the video. The explicit request `используй субтитры из файла видео` is the exception and activates the Embedded subtitle override above.
